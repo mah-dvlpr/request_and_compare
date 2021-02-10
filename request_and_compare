@@ -66,12 +66,7 @@ skip_current_segment() {
 get_response() {
     local ip="$(printf "${INPUT}" | grep Host: | cut -f2 -d ':' | xargs)"
     local port="$(printf "${INPUT}" | grep Host: | cut -f3 -d ':')"
-    if [ -z port ]; then
-        local addr="${ip}"
-    else
-        local addr="${ip}:${port}"
-    fi
-    echo -en "${1}\n" | tee fester | nc -C "${ip}" "${port}"
+    printf "${1} $ip $port\n" # HERE
     return 0
 }
 
@@ -86,10 +81,9 @@ compare_response_with_expected() {
 }
 
 INPUT="$(cat ${1})"
-# INPUT="$(skip_current_segment "${INPUT}")"
-# TMP="$(get_response $(current_segment "${INPUT}"))"
-# INPUT="$(current_segment "${INPUT}")"
-echo -n "$INPUT"
+TMP=$(get_response "$(current_segment "${INPUT}")")
+printf "$TMP\n\n"
+
 
 # while IFS= read -r line
 # do
