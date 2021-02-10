@@ -94,7 +94,7 @@ compare_response_with_expected() {
     if [ "${1}" == "${2}" ]; then
         printf 'OK'
     else
-        printf "${2}" > 2
+        printf 'FAILED'
     fi
     return 0
 }
