@@ -4,17 +4,26 @@
 # ./request_and_compare path/to/file
 
 # The file that you provide should have the structure
-# THE REQUEST SENT TO SERVER
 # ################################
-# THE EXPECTED RESPONSE
+# THE REQUEST SENT TO SERVER
 # ################################
 # HEADERS TO IGNORE IN RESPONSE
 # ################################
 # LINES IN BODY THAT CONTAIN PATTERN SHOULD BE IGNORED IN RESPONE
+# ################################
+# THE EXPECTED RESPONSE
+# ################################
 
 # Here is an example of what the file might look like:
+# ################################
 # GET / HTTP/1.1
 # Host: google.com
+# ################################
+# Date
+# Expires
+# ################################
+# TITLE
+# BODY
 # ################################
 # HTTP/1.1 301 Moved Permanently
 # Location: http://www.google.com/
@@ -34,28 +43,42 @@
 # <A HREF="http://www.google.com/">here</A>.
 # </BODY></HTML>
 # ################################
-# Date
-# Expires
-# X-XSS-Protection
-# ################################
-# TITLE
-# BODY
 
 set -e # Exit when any command throws an error
+INPUT=
+DELIM="################################"
 
+# Print the current segment of the input file, without interpretation.
+current_segment() {
+    cat "${1}" | sed "/^${DELIM}$/q" | sed '$d'
+    return 0
+}
+
+# Print everything except the current segment of the input file.
+skip_current_segment() {
+    cat "${1}" | sed "1,/^${DELIM}$/d"
+    return 0
+}
+
+# Make a request to the server and get the response.
 get_response() {
     return 0
 }
 
+# Ignores strings in the response according the the input file.
 ignore_strings() {
     return 0
 }
 
+# Compare the final response string with the segment in the input file.
 compare_response_with_expected() {
     return 0
 }
 
-while IFS= read -r line
-do
-    echo "$line"
-done < "${1}"
+INPUT="${1}"
+echo "$(skip_current_segment "${INPUT}")"
+# while IFS= read -r line
+# do
+
+#     echo "$line"
+# done < "${1}"
