@@ -9,7 +9,7 @@
 # ################################
 # HEADERS TO IGNORE IN RESPONSE
 # ################################
-# LINES IN BODY THAT CONTAIN PATTERN SHOULD BE IGNORED IN RESPONE
+# LINES IN BODY THAT CONTAIN PATTERN SHOULD BE IGNORED IN RESPONE (CURRENTLY NOT IMPLEMENTED/USED!!!)
 # ################################
 # THE EXPECTED RESPONSE
 # ################################
@@ -21,8 +21,6 @@
 # ################################
 # Date
 # Expires
-# ################################
-# TITLE
 # ################################
 # HTTP/1.1 301 Moved Permanently
 # Location: http://www.google.com/
@@ -50,7 +48,7 @@ INPUT="$(cat ${1})"
 DELIM="################################"
 
 # Print the current segment of the input file, without any string interpretation.
-current_segment() {
+get_current_segment() {
     printf "${1}" | sed "/^${DELIM}$/q" | sed '$d'
     return 0
 }
@@ -69,18 +67,25 @@ get_response() {
     return 0
 }
 
-# Ignores strings in the response according the the input file.
+# Ignores strings in the response according the the input file. Can only ignore one string per line!
 ignore_strings() {
-    # while IFS='' read -r line
-    # do
-    #     # while IFS='' read -r ignore_me
-    #     # do
-    #     #     echo "$(echo "${line}" | sed -n "s/${ignore_me}/asd/p")"
-    #     # done < <(printf "${2}\n")
-    #     # echo "${line}"
-    # done < <(printf "${1}\n")
-
-    # printf "${1}"
+    local ignore
+    while IFS='' read -r line
+    do
+        while IFS='' read -r ignore_me
+        do
+            if echo "${line}" | grep -q "^${ignore_me}"; then
+                ignore="${ignore_me}"
+                break
+            fi
+        done < <(printf "${2}\n")
+        if [ -z "${ignore}" ]; then
+            echo "${line}"
+        else
+            echo "$(echo "${line}" | sed "s/^${ignore}.*$/#IGNORED -> ${ignore}#/")"
+            ignore=
+        fi
+    done < <(printf "${1}\n")
     return 0
 }
 
@@ -90,9 +95,9 @@ compare_response_with_expected() {
 }
 
 run() {
-    local response=$(get_response "$(current_segment "${INPUT}")")
-    local current=$(current_segment "$(skip_current_segment "${INPUT}")")
-    # response=$(ignore_strings "${response}" "${current}")
+    local response=$(get_response "$(get_current_segment "${INPUT}")")
+    local current_segment=$(get_current_segment "$(skip_current_segment "${INPUT}")")
+    response=$(ignore_strings "${response}" "${current_segment}")
     printf "$response\n"
 }
 
