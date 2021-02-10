@@ -77,7 +77,7 @@ compare_response_with_expected() {
 }
 
 INPUT="${1}"
-echo "$(skip_current_segment "${INPUT}")"
+echo "$(skip_current_segment ${INPUT})"
 
 
 # while IFS= read -r line
