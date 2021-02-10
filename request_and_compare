@@ -66,7 +66,7 @@ skip_current_segment() {
 get_response() {
     local ip="$(printf "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')"
     local port="$(printf "${1}" | grep Host: | cut -f3 -d ':')"
-    printf "${1}\n" # HERE
+    printf "${1}\n\n" | nc -NC ${ip} ${port}
     return 0
 }
 
