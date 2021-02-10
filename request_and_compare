@@ -64,7 +64,7 @@ skip_current_segment() {
 
 # Make a request to the server and get the response.
 get_response() {
-    local ip="$(printf "${INPUT}" | grep Host: | cut -f2 -d ':' | xargs)"
+    local ip="$(printf "${INPUT}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')"
     local port="$(printf "${INPUT}" | grep Host: | cut -f3 -d ':')"
     printf "${1} $ip $port\n" # HERE
     return 0
