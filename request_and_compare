@@ -87,9 +87,9 @@ compare_response_with_expected() {
 
 INPUT="$(cat ${1})"
 # INPUT="$(skip_current_segment "${INPUT}")"
-TMP="$(get_response $(current_segment "${INPUT}"))"
-# INPUT="$(skip_current_segment "${INPUT}")"
-echo -n "$TMP"
+# TMP="$(get_response $(current_segment "${INPUT}"))"
+# INPUT="$(current_segment "${INPUT}")"
+echo -n "$INPUT"
 
 # while IFS= read -r line
 # do
