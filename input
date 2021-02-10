@@ -5,22 +5,22 @@ Host: localhost:8080
 Date
 Expires
 ################################
-HTTP/1.1 301 Moved Permanently
-Location: http://www.google.com/
-Content-Type: text/html; charset=UTF-8
-#IGNORED:Date#
-#IGNORED:Expires#
-Cache-Control: public, max-age=2592000
-Server: gws
-Content-Length: 219
-X-XSS-Protection: 0
-X-Frame-Options: SAMEORIGIN
+HTTP/1.1 200 OK
+Content-Type: text/html
+Accept-Ranges: bytes
+ETag: "4254564274"
+Last-Modified: Wed, 09 Dec 2020 02:05:23 GMT
+Content-Length: 93
+Connection: close
+Date: Wed, 10 Feb 2021 21:10:46 GMT
+Server: lighttpd/1.4.55
 
-<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
-#IGNORED:TITLE#
-<H1>301 Moved</H1>
-The document has moved
-<A HREF="http://www.google.com/">here</A>.
-</BODY></HTML>
+<html>
+    <body>
+        <h1>
+            Index test page!
+        </h1>
+    </body>
+</html>
 
 ################################

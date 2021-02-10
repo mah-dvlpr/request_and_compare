@@ -91,14 +91,24 @@ ignore_strings() {
 
 # Compare the final response string with the segment in the input file.
 compare_response_with_expected() {
+    echo "Hej"
     return 0
 }
 
 run() {
-    local response=$(get_response "$(get_current_segment "${INPUT}")")
-    local current_segment=$(get_current_segment "$(skip_current_segment "${INPUT}")")
+    local current_segment=$(get_current_segment "${INPUT}")
+    local response=$(get_response "${current_segment}")
+    local verdict="FAILED"
+
+    # Next segment is list of strings to ignore
+    current_segment=$(get_current_segment "$(skip_current_segment "${current_segment}")")
     response=$(ignore_strings "${response}" "${current_segment}")
-    printf "$response\n"
+
+    # Next segment is expected reponse from server
+    current_segment=$(get_current_segment "$(skip_current_segment "${current_segment}")")
+    verdict=$(compare_response_with_expected "{response}" "${current_segment}")
+
+    echo "${verdict}"
 }
 
 run
