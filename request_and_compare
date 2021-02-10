@@ -15,54 +15,63 @@
 # ################################
 
 # Here is an example of what the file might look like:
-# ################################
 # GET / HTTP/1.1
 # Host: google.com
+
 # ################################
 # Date
 # Expires
 # ################################
 # TITLE
-# BODY
 # ################################
 # HTTP/1.1 301 Moved Permanently
 # Location: http://www.google.com/
 # Content-Type: text/html; charset=UTF-8
-# Date: Wed, 10 Feb 2021 17:11:33 GMT
-# Expires: Fri, 12 Mar 2021 17:11:33 GMT
+# #IGNORED:Date#
+# #IGNORED:Expires#
 # Cache-Control: public, max-age=2592000
 # Server: gws
 # Content-Length: 219
 # X-XSS-Protection: 0
 # X-Frame-Options: SAMEORIGIN
-#
+
 # <HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
-# <TITLE>301 Moved</TITLE></HEAD><BODY>
+# #IGNORED:TITLE#
 # <H1>301 Moved</H1>
 # The document has moved
 # <A HREF="http://www.google.com/">here</A>.
 # </BODY></HTML>
+
 # ################################
 
 set -e # Exit when any command throws an error
+
 INPUT=
 DELIM="################################"
+TMP=
 
-# Print the current segment of the input file, without interpretation.
+# Print the current segment of the input file, without any string interpretation.
 current_segment() {
-    cat "${1}" | sed "/^${DELIM}$/q" | sed '$d'
+    printf "${1}" | sed "/^${DELIM}$/q" | sed '$d'
     return 0
 }
 
 # Print everything except the current segment of the input file.
 skip_current_segment() {
-    cat "${1}" | sed "1,/^${DELIM}$/d"
+    printf "${1}" | sed "1,/^${DELIM}$/d"
     return 0
 }
 
 # Make a request to the server and get the response.
 get_response() {
-    printf "${1}"
+    local ip="$(printf "${INPUT}" | grep Host: | cut -f2 -d ':' | xargs)"
+    local port="$(printf "${INPUT}" | grep Host: | cut -f3 -d ':')"
+    if [ -z port ]; then
+        local addr="${ip}"
+    else
+        local addr="${ip}:${port}"
+    fi
+    echo -en "${1}\n" | tee fester | nc -C "${ip}" "${port}"
     return 0
 }
 
@@ -76,9 +85,11 @@ compare_response_with_expected() {
     return 0
 }
 
-INPUT="${1}"
-echo "$(skip_current_segment ${INPUT})"
-
+INPUT="$(cat ${1})"
+# INPUT="$(skip_current_segment "${INPUT}")"
+TMP="$(get_response $(current_segment "${INPUT}"))"
+# INPUT="$(skip_current_segment "${INPUT}")"
+echo -n "$TMP"
 
 # while IFS= read -r line
 # do
