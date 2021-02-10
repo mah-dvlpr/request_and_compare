@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Example usage:
+# ./request_and_compare path/to/file
+
+# The file that you provide should have the structure
+# THE REQUEST SENT TO SERVER
+# ################################
+# THE EXPECTED RESPONSE
+# ################################
+# HEADERS TO IGNORE IN RESPONSE
+# ################################
+# LINES IN BODY THAT CONTAIN PATTERN SHOULD BE IGNORED IN RESPONE
+
+# Here is an example of what the file might look like:
+# GET / HTTP/1.1
+# Host: google.com
+# ################################
+# HTTP/1.1 301 Moved Permanently
+# Location: http://www.google.com/
+# Content-Type: text/html; charset=UTF-8
+# Date: Wed, 10 Feb 2021 17:11:33 GMT
+# Expires: Fri, 12 Mar 2021 17:11:33 GMT
+# Cache-Control: public, max-age=2592000
+# Server: gws
+# Content-Length: 219
+# X-XSS-Protection: 0
+# X-Frame-Options: SAMEORIGIN
+#
+# <HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+# <TITLE>301 Moved</TITLE></HEAD><BODY>
+# <H1>301 Moved</H1>
+# The document has moved
+# <A HREF="http://www.google.com/">here</A>.
+# </BODY></HTML>
+# ################################
+# Date
+# Expires
+# X-XSS-Protection
+# ################################
+# TITLE
+# BODY
+
+set -e # Exit when any command throws an error
+
+get_response() {
+    return 0
+}
+
+ignore_strings() {
+    return 0
+}
+
+compare_response_with_expected() {
+    return 0
+}
+
+while IFS= read -r line
+do
+    echo "$line"
+done < "${1}"
