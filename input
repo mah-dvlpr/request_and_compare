@@ -3,16 +3,16 @@ Host: localhost:8080
 
 ################################
 Date
-Expires
+Last-Modified
+ETag
 ################################
 HTTP/1.1 200 OK
 Content-Type: text/html
 Accept-Ranges: bytes
-ETag: "4254564274"
-Last-Modified: Wed, 09 Dec 2020 02:05:23 GMT
+#IGNORED -> ETag#
+#IGNORED -> Last-Modified#
 Content-Length: 93
-Connection: close
-Date: Wed, 10 Feb 2021 21:10:46 GMT
+#IGNORED -> Date#
 Server: lighttpd/1.4.55
 
 <html>

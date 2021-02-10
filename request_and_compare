@@ -54,7 +54,7 @@ get_current_segment() {
 }
 
 # Print everything except the current segment of the input file.
-skip_current_segment() {
+skip_segment() {
     printf "${1}" | sed "1,/^${DELIM}$/d"
     return 0
 }
@@ -94,23 +94,26 @@ compare_response_with_expected() {
     if [ "${1}" == "${2}" ]; then
         printf 'OK'
     else
-        printf 'FAILED'
+        printf "${2}" > 2
     fi
     return 0
 }
 
 run() {
-    local current_segment=$(get_current_segment "${INPUT}")
+    local remaining_segments="${INPUT}"
+    local current_segment=$(get_current_segment "${remaining_segments}")
     local response=$(get_response "${current_segment}")
     local verdict=''
 
     # Next segment is list of strings to ignore
-    current_segment=$(get_current_segment "$(skip_current_segment "${current_segment}")")
+    remaining_segments=$(skip_segment "${remaining_segments}")
+    current_segment=$(get_current_segment "${remaining_segments}")
     response=$(ignore_strings "${response}" "${current_segment}")
 
     # Next segment is expected reponse from server
-    current_segment=$(get_current_segment "$(skip_current_segment "${current_segment}")")
-    verdict=$(compare_response_with_expected "{response}" "${current_segment}")
+    remaining_segments=$(skip_segment "${remaining_segments}")
+    current_segment=$(get_current_segment "${remaining_segments}")
+    verdict=$(compare_response_with_expected "${response}" "${current_segment}")
 
     echo "${verdict}"
 }
