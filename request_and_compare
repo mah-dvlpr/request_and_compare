@@ -45,8 +45,6 @@
 
 # ################################
 
-set -e # Exit when any command throws an error
-
 DELIM="################################"
 
 # Print the current segment of the input file, without any string interpretation.
@@ -90,12 +88,16 @@ ignore_strings() {
 
 # Compare the final response string with the segment in the input file.
 compare_response_with_expected() {
-    local lf=$(echo "${1}" | tr -d '\r') # Have to remove CR from "windows version" from server in order to compare with "linux version"-file.
-    if [ "${lf}" == "${2}" ]; then
+    if [ "${1}" == "${2}" ]; then
         echo 'OK'
     else
         echo 'FAILED'
     fi
+}
+
+# Remove CR from "windows version" of a string
+crlf_to_lf() {
+    echo "$(echo "${response}" | tr -d '\r')"
 }
 
 run() {
@@ -120,6 +122,7 @@ run() {
     remaining_segments=$(skip_segment "${remaining_segments}")
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(ignore_strings "${response}" "${current_segment}")
+    response=$(crlf_to_lf "${response}") # Since files are usually stored with only LF on linux, this has to be done when comparing with the local file.
 
     # Next segment is expected reponse from server
     remaining_segments=$(skip_segment "${remaining_segments}")
@@ -131,9 +134,10 @@ run() {
     if [ "${verdict}" == 'FAILED' ]; then
         echo -n "${response}" > response
         echo -n "${current_segment}" > expected
-        echo 'Diagnostic files have been written to "response" and "expected" in this'
+        echo 'Diagnostic files have been written to "response" and "expected" in current directory'
+        echo -e "\n"================================""
         echo "RESPONSE:"; echo "${response}"
-        echo "================================"
+        echo -e "\n================================"
         echo "EXPECTED:"; echo "${current_segment}"
         return 1
     fi
@@ -141,4 +145,7 @@ run() {
 
 for file in "$@"; do
     run "${file}"
+    if [ $? -ne 0 ]; then
+        break
+    fi
 done
