@@ -46,6 +46,9 @@
 # ################################
 
 DELIM="################################"
+COLOR_RESET="\033[0m"
+COLOR_GREEN="\033[1;92m"
+COLOR_RED="\033[1;91m"
 
 # Print the current segment of the input file, without any string interpretation.
 get_current_segment() {
@@ -89,9 +92,9 @@ ignore_strings() {
 # Compare the final response string with the segment in the input file.
 compare_response_with_expected() {
     if [ "${1}" == "${2}" ]; then
-        echo 'OK'
+        echo "${COLOR_GREEN}OK${COLOR_RESET}    "
     else
-        echo 'FAILED'
+        echo "${COLOR_RED}FAILED${COLOR_RESET}"
     fi
 }
 
@@ -128,17 +131,17 @@ run() {
     remaining_segments=$(skip_segment "${remaining_segments}")
     current_segment=$(get_current_segment "${remaining_segments}")
     verdict=$(compare_response_with_expected "${response}" "${current_segment}")
-
+    
     # Print verdict for respective test
-    echo "${verdict} - ${test_name}"
-    if [ "${verdict}" == 'FAILED' ]; then
+    echo -e "${verdict} - ${test_name}"
+    if [ "${verdict}" == "${COLOR_RED}FAILED${COLOR_RESET}" ]; then
         echo -n "${response}" > response
         echo -n "${current_segment}" > expected
-        echo 'Diagnostic files have been written to "response" and "expected" in current directory'
+        echo -e '\033[91mDiagnostic files have been written to "response" and "expected" in current directory\033[m'
         echo -e "\n"================================""
-        echo "RESPONSE:"; echo "${response}"
+        echo "           RESPONSE:"; echo "${response}"
         echo -e "\n================================"
-        echo "EXPECTED:"; echo "${current_segment}"
+        echo "           EXPECTED:"; echo "${current_segment}"
         return 1
     fi
 }
