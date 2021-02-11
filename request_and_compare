@@ -91,7 +91,8 @@ ignore_strings() {
 
 # Compare the final response string with the segment in the input file.
 compare_response_with_expected() {
-    if [ "${1}" == "${2}" ]; then
+    local lf=$(echo "${1}" | tr -d '\r') # Have to remove CR from "windows version" from server in order to compare with "linux version"-file.
+    if [ "${lf}" == "${2}" ]; then
         printf 'OK'
     else
         printf 'FAILED'
