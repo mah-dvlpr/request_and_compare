@@ -95,11 +95,6 @@ compare_response_with_expected() {
         echo 'OK'
     else
         echo 'FAILED'
-        echo "RESPONSE:"; echo "${lf}"
-        echo "${lf}" > 1
-        echo "================================"
-        echo "EXPECTED:"; echo "${2}"
-        echo "${2}" > 2
     fi
 }
 
@@ -133,6 +128,15 @@ run() {
 
     # Print verdict for respective test
     echo "${verdict} - ${test_name}"
+    if [ "${verdict}" == 'FAILED' ]; then
+        echo -n "${response}" > response
+        echo -n "${current_segment}" > expected
+        echo 'Diagnostic files have been written to "response" and "expected" in this'
+        echo "RESPONSE:"; echo "${response}"
+        echo "================================"
+        echo "EXPECTED:"; echo "${current_segment}"
+        return 1
+    fi
 }
 
 for file in "$@"; do
