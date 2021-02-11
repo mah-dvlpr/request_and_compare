@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Example usage:
-# ./request_and_compare path/to/file
+# ./request_and_compare path/to/file [path/to/file2...]
 
 # The file that you provide should have the structure
 # ################################
@@ -42,7 +42,6 @@
 
 set -e # Exit when any command throws an error
 
-INPUT="$(cat ${1})"
 DELIM="################################"
 
 # Print the current segment of the input file, without any string interpretation.
@@ -106,7 +105,7 @@ compare_response_with_expected() {
 }
 
 run() {
-    local remaining_segments="${INPUT}"
+    local remaining_segments=$(cat "${1}")
     local current_segment=$(get_current_segment "${remaining_segments}")
     local response=$(get_response "${current_segment}")
     local verdict=''
@@ -124,4 +123,6 @@ run() {
     echo "${verdict}"
 }
 
-run
+for file in "$@"; do
+    run "${file}"
+done
