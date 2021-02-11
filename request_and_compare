@@ -170,9 +170,11 @@ run() {
     echo -e "${verdict} - ${test_name}"
     if [ "${verdict}" == "${COLOR_RED}FAILED${COLOR_RESET}" ]; then
         echo -e "${COLOR_RED}Response does not match expected data.${COLOR_RESET}"
-        echo -n "${response}" > response_${test_name}
-        echo -n "${current_segment}" > expected_${test_name}
-        echo -e "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory.\033[m"
+        if [ ! -e "response_${test_name}" ] || [ ! -e "response_${test_name}" ]; then
+            echo -n "${response}" > response_${test_name}
+            echo -n "${current_segment}" > expected_${test_name}
+        fi
+        echo -e "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory. If these files already existed, they were not overridden\033[m"
         echo -e "\033[91mThe two version, response (left, <) versus expected (right, >), are compared below.\033[m"
         echo -e "\033[91mNOTE: If no apparent difference can be seen below, there probably are hidden characters present. You can investigate this by examining the diagnostic files with an hexeditor and search for differences.\033[m"
         diff <(echo "${response}") <(echo "${current_segment}")
