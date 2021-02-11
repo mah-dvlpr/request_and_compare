@@ -146,9 +146,28 @@ run() {
     fi
 }
 
-for file in "$@"; do
-    run "${file}"
-    if [ $? -ne 0 ]; then
-        break
-    fi
-done
+if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
+    echo "Example usage:"
+    echo "    ./request_and_compare [-c] path/to/file [path/to/file2...]"
+    echo -e "\nIf you want the tests to run until terminated/interrupted, add the '-c' option before any files."
+    exit 0
+fi
+
+if [ "${1}" == "-c" ]; then
+    while [ true ]; do
+        echo -e "\033[1m===== New run at $(date +%r) =====\033[m"
+        for file in "${@:2}"; do
+            run "${file}"
+            if [ $? -ne 0 ]; then
+                break
+            fi
+        done
+    done
+else
+    for file in "$@"; do
+        run "${file}"
+        if [ $? -ne 0 ]; then
+            break
+        fi
+    done
+fi
