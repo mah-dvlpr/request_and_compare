@@ -207,10 +207,14 @@ STRINGS_TO_IGNORE_IN_RESPONSE
 THE_EXPECTED_RESPONSE
 ################################
 
-\033[1mExample of the generated file when an empty file is provided (with the '-g' option i.e. './request_and_compare -g empty_file'):\033[m
+\033[1mExample of the generated file when an empty or non-existent file is provided (with the '-g' option i.e. './request_and_compare -g empty_file'):\033[m
+NAME_OF_THE_TEST
 ################################
+THE_REQUEST_SENT_TO_SERVER
 ################################
+STRINGS_TO_IGNORE_IN_RESPONSE
 ################################
+THE_EXPECTED_RESPONSE
 ################################
 
 \033[1mExample of what a file might look like before generating the expected response with the '-g' option:\033[m
