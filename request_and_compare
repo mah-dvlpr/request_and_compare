@@ -178,12 +178,16 @@ run() {
 
 # Meta function for running the main function (run) for each file requested.
 run_loop() {
-    echo -e "\033[1m===== New run at $(date +%r) =====\033[m"
+    local output="\033[1m===== New run at $(date +%r) =====\033[m\n"
     for file in "${@}"; do
-        if ! run "${file}"; then
+        output="${output}$(run "${file}")\n"
+        if [ "${?}" -ne 0 ]; then
+            echo -en "${output}"
             return 1
         fi
     done
+    clear
+    echo -en "${output}"
 }
 
 if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
