@@ -19,6 +19,9 @@ skip_segment() {
 get_response() {
     local ip=$(printf "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')
     local port=$(printf "${1}" | grep Host: | cut -f3 -d ':')
+    if [ -z "${port}" ]; then
+        port=80
+    fi
     printf "${1}\n\n" | nc -NC ${ip} ${port}
 }
 
