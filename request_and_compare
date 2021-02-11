@@ -47,13 +47,11 @@ DELIM="################################"
 # Print the current segment of the input file, without any string interpretation.
 get_current_segment() {
     printf "${1}" | sed "/^${DELIM}$/q" | sed '$d'
-    return 0
 }
 
 # Print everything except the current segment of the input file.
 skip_segment() {
     printf "${1}" | sed "1,/^${DELIM}$/d"
-    return 0
 }
 
 # Make a request to the server and get the response.
@@ -61,7 +59,6 @@ get_response() {
     local ip=$(printf "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')
     local port=$(printf "${1}" | grep Host: | cut -f3 -d ':')
     printf "${1}\n\n" | nc -NC ${ip} ${port}
-    return 0
 }
 
 # Ignores strings in the response according the the input file. Can only ignore one string per line!
@@ -84,7 +81,6 @@ ignore_strings() {
             ignore=
         fi
     done < <(printf "${1}\n")
-    return 0
 }
 
 # Compare the final response string with the segment in the input file.
@@ -99,9 +95,7 @@ compare_response_with_expected() {
         echo "================================"
         echo "EXPECTED:"; echo "${2}"
         echo "${2}" > 2
-        return 1
     fi
-    return 0
 }
 
 run() {
@@ -125,7 +119,6 @@ run() {
     verdict=$(compare_response_with_expected "${response}" "${current_segment}")
 
     echo "${verdict}"
-    return 0
 }
 
 for file in "$@"; do
