@@ -36,7 +36,7 @@ ignore_strings() {
                 ignore="${ignore_me}"
                 break
             fi
-        done < <(printf "${2}\n")
+        done < <(printf '%s\n' "${2}")
 
         if [ -z "${ignore}" ]; then
             printf '%s\n' "${line}"
@@ -44,7 +44,7 @@ ignore_strings() {
             printf '%s\n' "$(printf '%s' "${line}" | sed "s/^${ignore}.*$/#IGNORED -> ${ignore}#/")"
             ignore=
         fi
-    done < <(printf "${1}\n")
+    done < <(printf '%s\n' "${1}")
 }
 
 # Compare the final response string with the segment in the input file.
