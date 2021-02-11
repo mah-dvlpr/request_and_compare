@@ -7,18 +7,18 @@ COLOR_RED="\033[1;91m"
 
 # Print the current segment of the input file, without any string interpretation.
 get_current_segment() {
-    printf "${1}" | sed "/^${DELIM}$/q" | sed '$d'
+    printf '%s' "${1}" | sed "/^${DELIM}$/q" | sed '$d'
 }
 
 # Print everything except the current segment of the input file.
 skip_segment() {
-    printf "${1}" | sed "1,/^${DELIM}$/d"
+    printf '%s' "${1}" | sed "1,/^${DELIM}$/d"
 }
 
 # Make a request to the server and get the response.
 get_response() {
-    local ip=$(printf "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')
-    local port=$(printf "${1}" | grep Host: | cut -f3 -d ':')
+    local ip=$(printf '%s' "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')
+    local port=$(printf '%s' "${1}" | grep Host: | cut -f3 -d ':')
     if [ -z "${port}" ]; then
         port=80
     fi
