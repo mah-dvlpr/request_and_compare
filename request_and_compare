@@ -98,7 +98,9 @@ compare_response_with_expected() {
     fi
 }
 
-# Remove CR from "windows version" of a string
+# Remove CR from a string.
+# HTTP standards states the usage of CRLF, 
+# but when comparing with local files, it is better to remove it first.
 crlf_to_lf() {
     echo "$(echo "${response}" | tr -d '\r')"
 }
