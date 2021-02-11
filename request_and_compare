@@ -64,10 +64,7 @@ crlf_to_lf() {
 generate_expected_response() {
     local remaining_segments=$(cat "${1}" 2>/dev/null)
     if [ -z "${remaining_segments}" ]; then
-        echo "${DELIM}" > "${1}"
-        echo "${DELIM}" > "${1}"
-        echo "${DELIM}" > "${1}"
-        echo "${DELIM}" > "${1}"
+        echo -e "${DELIM}\n${DELIM}\n${DELIM}\n${DELIM}" > "${1}"
         echo -e "${COLOR_RED}Generated an empty file. You have to fill this in according to the -h|--help section!${COLOR_RESET}"
         return 0
     fi
@@ -164,8 +161,7 @@ run() {
 run_loop() {
     echo -e "\033[1m===== New run at $(date +%r) =====\033[m"
     for file in "${@}"; do
-        if run "${file}"; then
-
+        if ! run "${file}"; then
             return 1
         fi
     done
