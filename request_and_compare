@@ -129,6 +129,8 @@ ETag
 run() {
     local remaining_segments=$(cat "${1}")
     if [ -z "$remaining_segments" ]; then
+        echo -e "${COLOR_RED}FAILED${COLOR_RESET} - File ${1}"
+        echo -e "${COLOR_RED}File does not exist.${COLOR_RESET}"
         return 1
     fi
     local test_name
@@ -167,10 +169,10 @@ run() {
     # Print verdict for respective test
     echo -e "${verdict} - ${test_name}"
     if [ "${verdict}" == "${COLOR_RED}FAILED${COLOR_RESET}" ]; then
-        echo -n "${response}" > response
-        echo -n "${current_segment}" > expected
-        echo -e '\033[91mDiagnostic files have been written to "response" and "expected" in current directory.\033[m'
-        echo -e '\033[91mThe two version, response (left) versus expected (right), are compared below.\033[m'
+        echo -n "${response}" > response_${test_name}
+        echo -n "${current_segment}" > expected_${test_name}
+        echo -e "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory.\033[m"
+        echo -e "\033[91mThe two version, response (left) versus expected (right), are compared below.\033[m"
         diff <(echo "${response}") <(echo "${current_segment}")
         return 1
     fi
@@ -181,10 +183,6 @@ run_loop() {
     local output="\033[1m===== New run at $(date +%r) =====\033[m\n"
     for file in "${@}"; do
         output="${output}$(run "${file}")\n"
-        if [ "${?}" -ne 0 ]; then
-            echo -en "${output}"
-            return 1
-        fi
     done
     clear
     echo -en "${output}"
@@ -268,7 +266,7 @@ if [ "${1}" == "-g" ]; then
 fi
 
 if [ "${1}" == "-c" ]; then
-    while run_loop "${@:2}"; do :; done
+    while true; do run_loop "${@:2}"; done
 else
     run_loop "${@}"
 fi
