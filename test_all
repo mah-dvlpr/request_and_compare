@@ -1,0 +1,13 @@
+#!/bin/bash
+
+macro() {
+    if [ $(./request_and_compare "${1}") ] && [ $? -eq 0 ]; then
+        printf 0
+    else
+        printf 1
+    fi
+}
+
+if [ $(macro input) -eq 0 ]; then
+    echo "hej"
+fi
