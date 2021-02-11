@@ -64,7 +64,14 @@ crlf_to_lf() {
 generate_expected_response() {
     local remaining_segments=$(cat "${1}" 2>/dev/null)
     if [ -z "${remaining_segments}" ]; then
-        echo -e "${DELIM}\n${DELIM}\n${DELIM}\n${DELIM}" > "${1}"
+        echo -e "NAME_OF_THE_TEST
+${DELIM}
+THE_REQUEST_SENT_TO_SERVER
+${DELIM}
+STRINGS_TO_IGNORE_IN_RESPONSE
+${DELIM}
+THE_EXPECTED_RESPONSE
+${DELIM}" > "${1}"
         echo -e "${COLOR_RED}Generated an empty file. You have to fill this in according to the -h|--help section!${COLOR_RESET}"
         return 0
     fi
@@ -172,7 +179,7 @@ if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
     echo "    ./request_and_compare [-c|-g] path/to/file [path/to/file2...]"
     echo -e "\nIf you want the tests to run until terminated/interrupted, add the '-c' option before any files."
     echo -e "\nIt can be hard to write the expected result by hand. If you have a working server which delivers the correct response, you can generate and append its response to an existing file (which misses the expected resonse portion). Add the '-g' option before adding a single file to generate this string and append it to given file."
-    echo "If the file provided is empty, when applying the '-g' option, then the script will simply generate a file with the required structure. No actual 'real' data is written."
+    echo "If the file provided is non-existent or empty, when applying the '-g' option, then the script will simply generate a file with the required structure. No actual 'real' data is written."
     
     echo -e "\n\033[1mThe file that you provide must have the following structure:\033[m
 NAME_OF_THE_TEST
