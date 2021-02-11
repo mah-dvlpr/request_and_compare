@@ -1,4 +1,4 @@
-input6
+input1
 ################################
 GET / HTTP/1.1
 Host: google.com:80
@@ -9,7 +9,7 @@ Expires
 ################################
 HTTP/1.1 301 Moved Permanently
 Location: http://www.google.com/
-Content-Type: text/html; charset=UTF-8s
+Content-Type: text/html; charset=UTF-8
 #IGNORED -> Date#
 #IGNORED -> Expires#
 Cache-Control: public, max-age=2592000
