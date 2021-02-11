@@ -77,6 +77,7 @@ ignore_strings() {
                 break
             fi
         done < <(printf "${2}\n")
+        
         if [ -z "${ignore}" ]; then
             echo "${line}"
         else
