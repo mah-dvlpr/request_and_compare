@@ -140,10 +140,12 @@ run() {
         echo -n "${response}" > response
         echo -n "${current_segment}" > expected
         echo -e '\033[91mDiagnostic files have been written to "response" and "expected" in current directory\033[m'
-        echo -e "\n"================================""
-        echo "           RESPONSE:"; echo "${response}"
-        echo -e "\n================================"
-        echo "           EXPECTED:"; echo "${current_segment}"
+        diff -y <(echo "${response}") <(echo "${current_segment}")
+        # Old format for showing changes...
+        # echo -e "\n"================================""
+        # echo "           RESPONSE:"; echo "${response}"
+        # echo -e "\n================================"
+        # echo "           EXPECTED:"; echo "${current_segment}"
         return 1
     fi
 }
