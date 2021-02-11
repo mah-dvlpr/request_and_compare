@@ -106,6 +106,10 @@ compare_response_with_expected() {
 
 run() {
     local remaining_segments=$(cat "${1}")
+    if [ -z "$remaining_segments" ]; then
+        return 1
+    fi
+
     local current_segment=$(get_current_segment "${remaining_segments}")
     local response=$(get_response "${current_segment}")
     local verdict=''
@@ -121,6 +125,7 @@ run() {
     verdict=$(compare_response_with_expected "${response}" "${current_segment}")
 
     echo "${verdict}"
+    return 0
 }
 
 for file in "$@"; do
