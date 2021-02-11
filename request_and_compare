@@ -4,6 +4,7 @@
 # ./request_and_compare path/to/file [path/to/file2...]
 
 # The file that you provide should have the structure
+# NAME OF THE TEST
 # ################################
 # THE REQUEST SENT TO SERVER
 # ################################
@@ -13,9 +14,12 @@
 # ################################
 
 # Here is an example of what the file might look like:
+# GET
+# ################################
 # GET / HTTP/1.1
 # Host: localhost:8080
-
+# Connection: close
+#
 # ################################
 # Date
 # Last-Modified
@@ -27,6 +31,7 @@
 # #IGNORED -> ETag#
 # #IGNORED -> Last-Modified#
 # Content-Length: 93
+# Connection: close
 # #IGNORED -> Date#
 # Server: lighttpd/1.4.55
 
@@ -103,10 +108,18 @@ run() {
     if [ -z "$remaining_segments" ]; then
         return 1
     fi
+    local test_name
+    local current_segment
+    local response
+    local verdict
 
-    local current_segment=$(get_current_segment "${remaining_segments}")
-    local response=$(get_response "${current_segment}")
-    local verdict=''
+    # Get test name
+    test_name=$(get_current_segment "${remaining_segments}")
+
+    # Next segment is request data to send to server
+    remaining_segments=$(skip_segment "${remaining_segments}")
+    current_segment=$(get_current_segment "${remaining_segments}")
+    response=$(get_response "${current_segment}")
 
     # Next segment is list of strings to ignore
     remaining_segments=$(skip_segment "${remaining_segments}")
@@ -118,7 +131,8 @@ run() {
     current_segment=$(get_current_segment "${remaining_segments}")
     verdict=$(compare_response_with_expected "${response}" "${current_segment}")
 
-    echo "${verdict}"
+    # Print verdict for respective test
+    echo "${verdict} - ${test_name}"
 }
 
 for file in "$@"; do
