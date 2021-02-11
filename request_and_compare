@@ -63,7 +63,7 @@ crlf_to_lf() {
 # Generate the expected response by for later comparison with a response from server and add it to input file.
 generate_expected_response() {
     local remaining_segments=$(cat "${1}")
-    if [ -z "$remaining_segments" ]; then
+    if [ -z "${remaining_segments}" ]; then
         return 1
     fi
     local current_segment
@@ -73,12 +73,33 @@ generate_expected_response() {
     remaining_segments=$(skip_segment "${remaining_segments}")
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(get_response "${current_segment}")
+    if [ -z "${response}" ]; then
+        return 1
+    fi
 
     # Next segment is list of strings to ignore
     remaining_segments=$(skip_segment "${remaining_segments}")
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(ignore_strings "${response}" "${current_segment}")
     response=$(crlf_to_lf "${response}") # Since files are usually stored with only LF on linux, this has to be done when comparing with the local file.
+
+    # Check that there isn't an expected response segment already
+    if [ "$(tail -n 2 "${1}" | head -n 1)" != "${DELIM}" ]; then
+        echo -e "\033[1mProvided files already contains an expected response segment.
+If you want to generate a new one, please remove this segment as in the example below:\033[m
+GET_TEST
+################################
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: close
+################################
+Date
+Last-Modified
+ETag
+################################
+################################"
+        return 1
+    fi
 
     # Append to expected result to file
     sed -i '$d' "${1}"
@@ -104,6 +125,9 @@ run() {
     remaining_segments=$(skip_segment "${remaining_segments}")
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(get_response "${current_segment}")
+    if [ -z "${response}" ]; then
+        return 1
+    fi
 
     # Next segment is list of strings to ignore
     remaining_segments=$(skip_segment "${remaining_segments}")
@@ -144,8 +168,9 @@ if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
     echo "    ./request_and_compare [-c|-g] path/to/file [path/to/file2...]"
     echo -e "\nIf you want the tests to run until terminated/interrupted, add the '-c' option before any files."
     echo -e "\nIt can be hard to write the expected result by hand. If you have a working server which delivers the correct response, you can generate and append its response to an existing file (which misses the expected resonse portion). Add the '-g' option before adding a single file to generate this string and append it to given file."
+    echo "If the file provided is empty, when applying the '-g' option, then the script will simply generate a file with the required structure. No actual 'real' data is written."
     
-    echo -e "\n\033[1mThe file that you provide must have the following structure\033[m:
+    echo -e "\n\033[1mThe file that you provide must have the following structure:\033[m
 NAME_OF_THE_TEST
 ################################
 THE_REQUEST_SENT_TO_SERVER
@@ -155,7 +180,13 @@ STRINGS_TO_IGNORE_IN_RESPONSE
 THE_EXPECTED_RESPONSE
 ################################
 
-\033[1mHere is an example of what a file might look like before generating the expected response (with the '-g' option)\033[m:
+\033[1mExample of the generated file when an empty file is provided (with the '-g' option i.e. './request_and_compare -g empty_file'):\033[m
+################################
+################################
+################################
+################################
+
+\033[1mExample of what a file might look like before generating the expected response with the '-g' option:\033[m
 GET_TEST
 ################################
 GET / HTTP/1.1
@@ -168,7 +199,7 @@ ETag
 ################################
 ################################
 
-\033[1mHere is an example of what the final file might look like\033[m:
+\033[1mExample of what the final file might look like (and what is generated with the '-g' option i.e. './request_and_compare -g request_file_missing_expected_result_segment'). :\033[m
 GET_TEST
 ################################
 GET / HTTP/1.1
