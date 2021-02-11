@@ -89,8 +89,12 @@ ${DELIM}" > "${1}"
 
     # Next segment is list of strings to ignore
     remaining_segments=$(skip_segment "${remaining_segments}")
-    current_segment=$(get_current_segment "${remaining_segments}")
-    response=$(ignore_strings "${response}" "${current_segment}")
+    if [ "$(echo "${remaining_segments}" | head -n 1)" != "${DELIM}" ]; then # If the ignore strings segment is empty but not containing a newline...
+        current_segment=$(get_current_segment "${remaining_segments}")
+        response=$(ignore_strings "${response}" "${current_segment}")
+    else
+        remaining_segments=$(echo "${remaining_segments}" | sed "1s/^${DELIM}$/ignore_me\n${DELIM}/") # Skip the delimiter by removing it so that next 'skip_segment' works.
+    fi
     response=$(crlf_to_lf "${response}") # Since files are usually stored with only LF on linux, this has to be done when comparing with the local file.
 
     # Check that there isn't an expected response segment already
@@ -143,8 +147,12 @@ run() {
 
     # Next segment is list of strings to ignore
     remaining_segments=$(skip_segment "${remaining_segments}")
-    current_segment=$(get_current_segment "${remaining_segments}")
-    response=$(ignore_strings "${response}" "${current_segment}")
+    if [ "$(echo "${remaining_segments}" | head -n 1)" != "${DELIM}" ]; then # If the ignore strings segment is empty but not containing a newline...
+        current_segment=$(get_current_segment "${remaining_segments}")
+        response=$(ignore_strings "${response}" "${current_segment}")
+    else
+        remaining_segments=$(echo "${remaining_segments}" | sed "1s/^${DELIM}$/ignore_me\n${DELIM}/") # Skip the delimiter by removing it so that next 'skip_segment' works.
+    fi
     response=$(crlf_to_lf "${response}") # Since files are usually stored with only LF on linux, this has to be done when comparing with the local file.
 
     # Next segment is expected reponse from server
