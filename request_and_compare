@@ -9,36 +9,34 @@
 # ################################
 # HEADERS TO IGNORE IN RESPONSE
 # ################################
-# LINES IN BODY THAT CONTAIN PATTERN SHOULD BE IGNORED IN RESPONE (CURRENTLY NOT IMPLEMENTED/USED!!!)
-# ################################
 # THE EXPECTED RESPONSE
 # ################################
 
 # Here is an example of what the file might look like:
 # GET / HTTP/1.1
-# Host: google.com
+# Host: localhost:8080
 
 # ################################
 # Date
-# Expires
+# Last-Modified
+# ETag
 # ################################
-# HTTP/1.1 301 Moved Permanently
-# Location: http://www.google.com/
-# Content-Type: text/html; charset=UTF-8
-# #IGNORED:Date#
-# #IGNORED:Expires#
-# Cache-Control: public, max-age=2592000
-# Server: gws
-# Content-Length: 219
-# X-XSS-Protection: 0
-# X-Frame-Options: SAMEORIGIN
+# HTTP/1.1 200 OK
+# Content-Type: text/html
+# Accept-Ranges: bytes
+# #IGNORED -> ETag#
+# #IGNORED -> Last-Modified#
+# Content-Length: 93
+# #IGNORED -> Date#
+# Server: lighttpd/1.4.55
 
-# <HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
-# #IGNORED:TITLE#
-# <H1>301 Moved</H1>
-# The document has moved
-# <A HREF="http://www.google.com/">here</A>.
-# </BODY></HTML>
+# <html>
+#     <body>
+#         <h1>
+#             Index test page!
+#         </h1>
+#     </body>
+# </html>
 
 # ################################
 
@@ -93,9 +91,14 @@ ignore_strings() {
 compare_response_with_expected() {
     local lf=$(echo "${1}" | tr -d '\r') # Have to remove CR from "windows version" from server in order to compare with "linux version"-file.
     if [ "${lf}" == "${2}" ]; then
-        printf 'OK'
+        echo 'OK'
     else
-        printf 'FAILED'
+        echo 'FAILED'
+        echo "RESPONSE:"; echo "${lf}"
+        echo "${lf}" > 1
+        echo "================================"
+        echo "EXPECTED:"; echo "${2}"
+        echo "${2}" > 2
     fi
     return 0
 }
