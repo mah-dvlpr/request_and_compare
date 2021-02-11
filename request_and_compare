@@ -169,6 +169,7 @@ run() {
     # Print verdict for respective test
     echo -e "${verdict} - ${test_name}"
     if [ "${verdict}" == "${COLOR_RED}FAILED${COLOR_RESET}" ]; then
+        echo -e "${COLOR_RED}Response does not match expected data.${COLOR_RESET}"
         echo -n "${response}" > response_${test_name}
         echo -n "${current_segment}" > expected_${test_name}
         echo -e "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory.\033[m"
