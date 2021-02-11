@@ -32,16 +32,16 @@ ignore_strings() {
     do
         while IFS='' read -r ignore_me
         do
-            if echo "${line}" | grep -q "^${ignore_me}"; then
+            if printf '%s' "${line}" | grep -q "^${ignore_me}"; then
                 ignore="${ignore_me}"
                 break
             fi
         done < <(printf "${2}\n")
 
         if [ -z "${ignore}" ]; then
-            echo "${line}"
+            printf '%s\n' "${line}"
         else
-            echo "$(echo "${line}" | sed "s/^${ignore}.*$/#IGNORED -> ${ignore}#/")"
+            printf '%s\n' "$(printf '%s' "${line}" | sed "s/^${ignore}.*$/#IGNORED -> ${ignore}#/")"
             ignore=
         fi
     done < <(printf "${1}\n")
@@ -50,9 +50,9 @@ ignore_strings() {
 # Compare the final response string with the segment in the input file.
 compare_response_with_expected() {
     if [ "${1}" == "${2}" ]; then
-        echo "${COLOR_GREEN}OK${COLOR_RESET}    "
+        printf '%s' "${COLOR_GREEN}OK${COLOR_RESET}    "
     else
-        echo "${COLOR_RED}FAILED${COLOR_RESET}"
+        printf '%s' "${COLOR_RED}FAILED${COLOR_RESET}"
     fi
 }
 
@@ -60,7 +60,7 @@ compare_response_with_expected() {
 # HTTP standards states the usage of CRLF, 
 # but when comparing with local files, it is better to remove it first.
 crlf_to_lf() {
-    echo "$(echo "${response}" | tr -d '\r')"
+    printf '%s' "$(printf '%s' "${response}" | tr -d '\r')"
 }
 
 # Generate the expected response by for later comparison with a response from server and add it to input file.
@@ -129,8 +129,8 @@ ETag
 run() {
     local remaining_segments=$(cat "${1}")
     if [ -z "$remaining_segments" ]; then
-        echo -e "${COLOR_RED}FAILED${COLOR_RESET} - File ${1}"
-        echo -e "${COLOR_RED}File does not exist.${COLOR_RESET}"
+        printf "${COLOR_RED}FAILED${COLOR_RESET} - File ${1}\n"
+        printf "${COLOR_RED}File does not exist.${COLOR_RESET}\n"
         return 1
     fi
     local test_name
@@ -146,18 +146,18 @@ run() {
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(get_response "${current_segment}")
     if [ -z "${response}" ]; then
-        echo -e "${COLOR_RED}FAILED${COLOR_RESET} - ${test_name}"
-        echo -e "${COLOR_RED}Server failed to respond.${COLOR_RESET}"
+        printf "${COLOR_RED}FAILED${COLOR_RESET} - ${test_name}\n"
+        printf "${COLOR_RED}Server failed to respond.${COLOR_RESET}\n"
         return 1
     fi
 
     # Next segment is list of strings to ignore
     remaining_segments=$(skip_segment "${remaining_segments}")
-    if [ "$(echo "${remaining_segments}" | head -n 1)" != "${DELIM}" ]; then # If the ignore strings segment is empty but not containing a newline...
+    if [ "$(printf '%s' "${remaining_segments}" | head -n 1)" != "${DELIM}" ]; then # If the ignore strings segment is empty but not containing a newline...
         current_segment=$(get_current_segment "${remaining_segments}")
         response=$(ignore_strings "${response}" "${current_segment}")
     else
-        remaining_segments=$(echo "${remaining_segments}" | sed "1s/^${DELIM}$/ignore_me\n${DELIM}/") # Skip the delimiter by removing it so that next 'skip_segment' works.
+        remaining_segments=$(printf '%s' "${remaining_segments}" | sed "1s/^${DELIM}$/ignore_me\n${DELIM}/") # Skip the delimiter by removing it so that next 'skip_segment' works.
     fi
     response=$(crlf_to_lf "${response}") # Since files are usually stored with only LF on linux, this has to be done when comparing with the local file.
 
@@ -167,17 +167,17 @@ run() {
     verdict=$(compare_response_with_expected "${response}" "${current_segment}")
     
     # Print verdict for respective test
-    echo -e "${verdict} - ${test_name}"
+    printf "${verdict} - ${test_name}\n"
     if [ "${verdict}" == "${COLOR_RED}FAILED${COLOR_RESET}" ]; then
-        echo -e "${COLOR_RED}Response does not match expected data.${COLOR_RESET}"
+        printf "${COLOR_RED}Response does not match expected data.${COLOR_RESET}\n"
         if [ ! -e "response_${test_name}" ] || [ ! -e "response_${test_name}" ]; then
-            echo -n "${response}" > response_${test_name}
-            echo -n "${current_segment}" > expected_${test_name}
+            printf '%s' "${response}" > response_${test_name}
+            printf '%s' "${current_segment}" > expected_${test_name}
         fi
-        echo -e "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory. If these files already existed, they were not overridden\033[m"
-        echo -e "\033[91mThe two version, response (left, <) versus expected (right, >), are compared below.\033[m"
-        echo -e "\033[91mNOTE: If no apparent difference can be seen below, there probably are hidden characters present. You can investigate this by examining the diagnostic files with an hexeditor and search for differences.\033[m"
-        diff <(echo "${response}") <(echo "${current_segment}")
+        printf "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory. If these files already existed, they were not overridden\033[m\n"
+        printf "\033[91mThe two version, response (left, <) versus expected (right, >), are compared below.\033[m\n"
+        printf "\033[91mNOTE: If no apparent difference can be seen below, there probably are hidden characters present. You can investigate this by examining the diagnostic files with an hexeditor and search for differences.\033[m\n"
+        diff <(printf '%s' "${response}") <(printf '%s' "${current_segment}")
         return 1
     fi
 }
@@ -189,17 +189,17 @@ run_loop() {
         output="${output}$(run "${file}")\n"
     done
     clear
-    echo -en "${output}"
+    printf "${output}"
 }
 
 if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
-    echo "Example usage:"
-    echo "    ./request_and_compare [-c|-g] path/to/file [path/to/file2...]"
-    echo -e "\nIf you want the tests to run until terminated/interrupted, add the '-c' option before any files."
-    echo -e "\nIt can be hard to write the expected result by hand. If you have a working server which delivers the correct response, you can generate and append its response to an existing file (which misses the expected resonse portion). Add the '-g' option before adding a single file to generate this string and append it to given file."
-    echo "If the file provided is non-existent or empty, when applying the '-g' option, then the script will simply generate a file with the required structure. No actual 'real' data is written."
+    printf "Example usage:\n"
+    printf "    ./request_and_compare [-c|-g] path/to/file [path/to/file2...]\n"
+    printf "\nIf you want the tests to run until terminated/interrupted, add the '-c' option before any files.\n"
+    printf "\nIt can be hard to write the expected result by hand. If you have a working server which delivers the correct response, you can generate and append its response to an existing file (which misses the expected resonse portion). Add the '-g' option before adding a single file to generate this string and append it to given file.\n"
+    printf "If the file provided is non-existent or empty, when applying the '-g' option, then the script will simply generate a file with the required structure. No actual 'real' data is written.\n"
     
-    echo -e "\n\033[1mThe file that you provide must have the following structure:\033[m
+    printf "\n\033[1mThe file that you provide must have the following structure:\033[m
 NAME_OF_THE_TEST
 ################################
 THE_REQUEST_SENT_TO_SERVER
@@ -260,14 +260,14 @@ Server: lighttpd/1.4.55
         </h1>
     </body>
 </html>
-################################"
+################################\n"
 
     exit 0
 fi
 
 if [ "${1}" == "-g" ]; then
     if ! generate_expected_response "${2}"; then
-        echo -e "${COLOR_RED}Failed to generate request file. Either bad input file or no response from server!${COLOR_RESET}"
+        printf "${COLOR_RED}Failed to generate request file. Either bad input file or no response from server!${COLOR_RESET}\n"
         exit 1
     fi
     exit 0
