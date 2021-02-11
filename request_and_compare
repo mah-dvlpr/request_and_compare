@@ -141,6 +141,7 @@ run() {
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(get_response "${current_segment}")
     if [ -z "${response}" ]; then
+        echo -e "${COLOR_RED}FAILED${COLOR_RESET} - ${test_name}"
         echo -e "${COLOR_RED}Server failed to respond.${COLOR_RESET}"
         return 1
     fi
