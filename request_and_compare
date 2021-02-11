@@ -127,7 +127,7 @@ ETag
 
 # Main function of the script.
 run() {
-    local remaining_segments=$(cat "${1}")
+    local remaining_segments=$(cat "${1}" 2>/dev/null)
     if [ -z "$remaining_segments" ]; then
         printf "${COLOR_RED}FAILED${COLOR_RESET} - File ${1}\n"
         printf "${COLOR_RED}File does not exist.${COLOR_RESET}\n"
