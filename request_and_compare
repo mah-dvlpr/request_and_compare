@@ -172,7 +172,8 @@ run() {
         echo -n "${response}" > response_${test_name}
         echo -n "${current_segment}" > expected_${test_name}
         echo -e "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory.\033[m"
-        echo -e "\033[91mThe two version, response (left) versus expected (right), are compared below.\033[m"
+        echo -e "\033[91mThe two version, response (left, <) versus expected (right, >), are compared below.\033[m"
+        echo -e "\033[91mNOTE: If no apparent difference can be seen below, there probably are hidden characters present. You can investigate this by examining the diagnostic files with an hexeditor and search for differences.\033[m"
         diff <(echo "${response}") <(echo "${current_segment}")
         return 1
     fi
