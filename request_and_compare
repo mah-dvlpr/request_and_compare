@@ -1,50 +1,5 @@
 #!/bin/bash
 
-# Example usage:
-# ./request_and_compare path/to/file [path/to/file2...]
-
-# The file that you provide should have the structure
-# NAME OF THE TEST
-# ################################
-# THE REQUEST SENT TO SERVER
-# ################################
-# HEADERS TO IGNORE IN RESPONSE
-# ################################
-# THE EXPECTED RESPONSE
-# ################################
-
-# Here is an example of what the file might look like:
-# GET
-# ################################
-# GET / HTTP/1.1
-# Host: localhost:8080
-# Connection: close
-#
-# ################################
-# Date
-# Last-Modified
-# ETag
-# ################################
-# HTTP/1.1 200 OK
-# Content-Type: text/html
-# Accept-Ranges: bytes
-# #IGNORED -> ETag#
-# #IGNORED -> Last-Modified#
-# Content-Length: 93
-# Connection: close
-# #IGNORED -> Date#
-# Server: lighttpd/1.4.55
-
-# <html>
-#     <body>
-#         <h1>
-#             Index test page!
-#         </h1>
-#     </body>
-# </html>
-
-# ################################
-
 DELIM="################################"
 COLOR_RESET="\033[0m"
 COLOR_GREEN="\033[1;92m"
@@ -105,15 +60,30 @@ crlf_to_lf() {
     echo "$(echo "${response}" | tr -d '\r')"
 }
 
-# Meta function for running the main function (run) for each file requested.
-run_loop() {
-    echo -e "\033[1m===== New run at $(date +%r) =====\033[m"
-    for file in "${@}"; do
-        run "${file}"
-        if [ $? -ne 0 ]; then
-            return 1
-        fi
-    done
+# Generate the expected response by for later comparison with a response from server and add it to input file.
+generate_expected_response() {
+    local remaining_segments=$(cat "${1}")
+    if [ -z "$remaining_segments" ]; then
+        return 1
+    fi
+    local current_segment
+    local response
+
+    # Next segment is request data to send to server
+    remaining_segments=$(skip_segment "${remaining_segments}")
+    current_segment=$(get_current_segment "${remaining_segments}")
+    response=$(get_response "${current_segment}")
+
+    # Next segment is list of strings to ignore
+    remaining_segments=$(skip_segment "${remaining_segments}")
+    current_segment=$(get_current_segment "${remaining_segments}")
+    response=$(ignore_strings "${response}" "${current_segment}")
+    response=$(crlf_to_lf "${response}") # Since files are usually stored with only LF on linux, this has to be done when comparing with the local file.
+
+    # Append to expected result to file
+    sed -i '$d' "${1}"
+    echo "${response}" >> "${1}"
+    echo "${DELIM}" >> "${1}"
 }
 
 # Main function of the script.
@@ -158,10 +128,86 @@ run() {
     fi
 }
 
+# Meta function for running the main function (run) for each file requested.
+run_loop() {
+    echo -e "\033[1m===== New run at $(date +%r) =====\033[m"
+    for file in "${@}"; do
+        run "${file}"
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
+    done
+}
+
 if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
     echo "Example usage:"
-    echo "    ./request_and_compare [-c] path/to/file [path/to/file2...]"
+    echo "    ./request_and_compare [-c|-g] path/to/file [path/to/file2...]"
     echo -e "\nIf you want the tests to run until terminated/interrupted, add the '-c' option before any files."
+    echo -e "\nIt can be hard to write the expected result by hand. If you have a working server which delivers the correct response, you can generate and append its response to an existing file (which misses the expected resonse portion). Add the '-g' option before adding a single file to generate this string and append it to given file."
+    
+    echo -e "\n\033[1mThe file that you provide must have the following structure\033[m:
+NAME_OF_THE_TEST
+################################
+THE_REQUEST_SENT_TO_SERVER
+################################
+STRINGS_TO_IGNORE_IN_RESPONSE
+################################
+THE_EXPECTED_RESPONSE
+################################
+
+\033[1mHere is an example of what a file might look like before generating the expected response (with the '-g' option)\033[m:
+GET_TEST
+################################
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: close
+################################
+Date
+Last-Modified
+ETag
+################################
+################################
+
+\033[1mHere is an example of what the final file might look like\033[m:
+GET_TEST
+################################
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: close
+################################
+Date
+Last-Modified
+ETag
+################################
+HTTP/1.1 200 OK
+Content-Type: text/html
+Accept-Ranges: bytes
+#IGNORED -> ETag#
+#IGNORED -> Last-Modified#
+Content-Length: 93
+Connection: close
+#IGNORED -> Date#
+Server: lighttpd/1.4.55
+
+<html>
+    <body>
+        <h1>
+            Index test page!
+        </h1>
+    </body>
+</html>
+################################"
+
+    exit 0
+fi
+
+if [ "${1}" == "-g" ]; then
+    if generate_expected_response "${2}"; then
+        echo -e "Request response generated and added to file!"
+    else
+        echo -e "${COLOR_RED}Failed to generate request file. Either bad input file or no response from server!${COLOR_RESET}"
+        exit 1
+    fi
     exit 0
 fi
 

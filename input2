@@ -1,9 +1,8 @@
-GET2
+GET_TEST2
 ################################
 GET / HTTP/1.1
 Host: google.com:80
 Connection: close
-
 ################################
 Date
 Last-Modified
