@@ -17,23 +17,15 @@ skip_segment() {
 
 # Make a request to the server and get the response.
 get_response() {
-    local address
-    local port
     local url
     local method
     local hdrs
 
-    # Build url
-    address=$(printf '%s' "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')
-    port=$(printf '%s' "${1}" | grep Host: | cut -f3 -d ':')
-    if [ -z "${port}" ]; then
-        port=80
-    fi
-    url=$(printf '%s' "${1}" | head -n 1 | cut -f2 -d ' ')
-    url="${address}:${port}${url}"
+    # Get url
+    url=$(printf '%s' "${1}" | sed -n '1p' | cut -f2 -d ' ')
 
     # Get method type
-    method=$(printf '%s' "${1}" | head -n 1 | cut -f1 -d ' ' | sed 's/^/-X /')
+    method=$(printf '%s' "${1}" | sed -n '2p' | cut -f1 -d ' ' | sed 's/^/-X /')
 
     # Format headers for curl command
     hdrs=$(printf '%s' "${1}" | sed "1d; s/^/-H '/; s/$/'/" | tr '\n' ' ')
@@ -126,6 +118,7 @@ ${DELIM}" > "${1}"
 If you want to generate a new one, please remove this segment as in the example below:\033[m
 GET_TEST
 ################################
+url: http://localhost:8080
 GET / HTTP/1.1
 Host: localhost:8080
 Connection: close
@@ -222,6 +215,7 @@ if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
     printf "\n\033[1mThe file that you provide must have the following structure:\033[m
 NAME_OF_THE_TEST
 ################################
+CURL_META_DATA
 THE_REQUEST_SENT_TO_SERVER
 ################################
 STRINGS_TO_IGNORE_IN_RESPONSE
@@ -232,6 +226,7 @@ THE_EXPECTED_RESPONSE
 \033[1mExample of the generated file when an empty or non-existent file is provided (with the '-g' option i.e. './request_and_compare -g empty_file'):\033[m
 NAME_OF_THE_TEST
 ################################
+CURL_META_DATA
 THE_REQUEST_SENT_TO_SERVER
 ################################
 STRINGS_TO_IGNORE_IN_RESPONSE
@@ -242,6 +237,7 @@ THE_EXPECTED_RESPONSE
 \033[1mExample of what a file might look like before generating the expected response with the '-g' option:\033[m
 GET_TEST
 ################################
+url: http://localhost:8080
 GET / HTTP/1.1
 Host: localhost:8080
 Connection: close
@@ -255,6 +251,7 @@ ETag
 \033[1mExample of what the final file might look like (and what is generated with the '-g' option i.e. './request_and_compare -g request_file_missing_expected_result_segment'). :\033[m
 GET_TEST
 ################################
+url: http://localhost:8080
 GET / HTTP/1.1
 Host: localhost:8080
 Connection: close
