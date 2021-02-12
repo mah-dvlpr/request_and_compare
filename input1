@@ -1,26 +1,27 @@
 input1
 ################################
 GET / HTTP/1.1
-Host: google.com
+Host: localhost:8080
+Connection: close
 ################################
 Date
 Expires
 ################################
-HTTP/1.1 301 Moved Permanently
-Location: http://www.google.com/
-Content-Type: text/html; charset=UTF-8
+HTTP/1.1 200 OK
+Content-Type: text/html
+Accept-Ranges: bytes
+ETag: "4254564274"
+Last-Modified: Wed, 09 Dec 2020 02:05:23 GMT
+Content-Length: 93
+Connection: close
 #IGNORED -> Date#
-#IGNORED -> Expires#
-Cache-Control: public, max-age=2592000
-Server: gws
-Content-Length: 219
-X-XSS-Protection: 0
-X-Frame-Options: SAMEORIGIN
+Server: lighttpd/1.4.55
 
-<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
-<TITLE>301 Moved</TITLE></HEAD><BODY>
-<H1>301 Moved</H1>
-The document has moved
-<A HREF="http://www.google.com/">here</A>.
-</BODY></HTML>
+<html>
+    <body>
+        <h1>
+            Index test page!
+        </h1>
+    </body>
+</html>
 ################################
