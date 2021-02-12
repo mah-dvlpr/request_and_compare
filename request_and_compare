@@ -19,11 +19,15 @@ skip_segment() {
 # Make a request to the server and get the response.
 get_response() {
     local url
+    local http_version
     local method
     local hdrs
 
     # Get url
     url=$(printf '%s' "${1}" | sed -n '1p' | cut -f2 -d ' ')
+
+    # HTTP version
+    http_version=$(printf '%s' "${1}" | sed -n '2p' | cut -f3 -d ' ' | sed 's/^HTTP\//--http/')
 
     # Get method type
     method=$(printf '%s' "${1}" | sed -n '2p' | cut -f1 -d ' ' | sed 's/^/-X /')
@@ -35,7 +39,7 @@ get_response() {
     hdrs="${hdrs} -H 'Host:' -H 'User-Agent:' -H 'Accept:'"
 
     # Make and print request
-    curl ${method} ${hdrs} -s -D '/dev/stdout' ${url}
+    curl ${method} ${hdrs} -s -D '/dev/stdout' ${http_version} ${url}
 }
 
 # Ignores strings in the response according the the input file. Can only ignore one string per line!
