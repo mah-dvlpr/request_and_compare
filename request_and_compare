@@ -17,12 +17,32 @@ skip_segment() {
 
 # Make a request to the server and get the response.
 get_response() {
-    local ip=$(printf '%s' "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')
-    local port=$(printf '%s' "${1}" | grep Host: | cut -f3 -d ':')
+    local address
+    local port
+    local url
+    local method
+    local hdrs
+
+    # Build url
+    address=$(printf '%s' "${1}" | grep Host: | cut -f2 -d ':' | sed 's/^\ //')
+    port=$(printf '%s' "${1}" | grep Host: | cut -f3 -d ':')
     if [ -z "${port}" ]; then
         port=80
     fi
-    printf "${1}\n\n" | nc -NC ${ip} ${port}
+    url=$(printf '%s' "${1}" | head -n 1 | cut -f2 -d ' ')
+    url="${address}:${port}${url}"
+
+    # Get method type
+    method=$(printf '%s' "${1}" | head -n 1 | cut -f1 -d ' ' | sed 's/^/-X /')
+
+    # Format headers for curl command
+    hdrs=$(printf '%s' "${1}" | sed "1d; s/^/-H '/; s/$/'/" | tr '\n' ' ')
+
+    # Disable/Remove default headers for curl
+    hdrs="${hdrs} -H 'Host:' -H 'User-Agent:' -H 'Accept:'"
+
+    # Make and print request
+    curl ${method} ${hdrs} -s -D '/dev/stdout' ${url}
 }
 
 # Ignores strings in the response according the the input file. Can only ignore one string per line!
