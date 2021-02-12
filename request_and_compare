@@ -1,5 +1,6 @@
 #!/bin/bash
 
+SLEEP_TIME=5
 DELIM="################################"
 COLOR_RESET="\033[0m"
 COLOR_GREEN="\033[1;92m"
@@ -291,7 +292,7 @@ if [ "${1}" == "-g" ]; then
 fi
 
 if [ "${1}" == "-c" ]; then
-    while true; do run_loop "${@:2}"; done
+    while true; do PAST_TIME=$SECONDS; run_loop "${@:2}"; sleep $([ $(( ${SECONDS} - ${PAST_TIME} )) -ge ${SLEEP_TIME} ] && printf "0" || printf "$(( ${SLEEP_TIME} - (${SECONDS} - ${PAST_TIME}) ))"); done
 else
     run_loop "${@}"
 fi
