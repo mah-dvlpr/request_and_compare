@@ -1,4 +1,4 @@
-input1
+localhost
 ################################
 url: http://localhost:8080
 GET / HTTP/1.1
