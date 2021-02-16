@@ -3,9 +3,6 @@
 TIME_SLEEP=5
 TIME_PASSED=0
 DELIM="################################"
-COLOR_RESET="\033[0m"
-COLOR_GREEN="\033[1;92m"
-COLOR_RED="\033[1;91m"
 
 # Print the current segment of the input file, without any string interpretation.
 get_current_segment() {
@@ -67,10 +64,10 @@ ignore_strings() {
 
 # Compare the final response string with the segment in the input file.
 compare_response_with_expected() {
-    if [ "${1}" == "${2}" ]; then
-        printf '%s' "${COLOR_GREEN}OK${COLOR_RESET}    "
+    if [ "${1}" = "${2}" ]; then
+        printf '%s' "\033[1;92mOK\033[0m    "
     else
-        printf '%s' "${COLOR_RED}FAILED${COLOR_RESET}"
+        printf '%s' "\033[1;91mFAILED\033[0m"
     fi
 }
 
@@ -93,7 +90,7 @@ STRINGS_TO_IGNORE_IN_RESPONSE
 ${DELIM}
 THE_EXPECTED_RESPONSE
 ${DELIM}" > "${1}"
-        printf "${COLOR_RED}Generated an empty file. You have to fill this in according to the -h|--help section!${COLOR_RESET}\n"
+        printf "\033[1;91mGenerated an empty file. You have to fill this in according to the -h|--help section!\033[0m\n"
         return 0
     fi
     local current_segment
@@ -104,7 +101,7 @@ ${DELIM}" > "${1}"
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(get_response "${current_segment}")
     if [ -z "${response}" ]; then
-        printf "${COLOR_RED}Server failed to respond.${COLOR_RESET}\n"
+        printf "\033[1;91mServer failed to respond.\033[0m\n"
         return 1
     fi
 
@@ -148,8 +145,8 @@ ETag
 run() {
     local remaining_segments=$(cat "${1}" 2>/dev/null)
     if [ -z "$remaining_segments" ]; then
-        printf "${COLOR_RED}FAILED${COLOR_RESET} - File ${1}\n"
-        printf "${COLOR_RED}File does not exist.${COLOR_RESET}\n"
+        printf "\033[1;91mFAILED\033[0m - File ${1}\n"
+        printf "\033[1;91mFile does not exist.\033[0m\n"
         return 1
     fi
     local test_name
@@ -165,8 +162,8 @@ run() {
     current_segment=$(get_current_segment "${remaining_segments}")
     response=$(get_response "${current_segment}")
     if [ -z "${response}" ]; then
-        printf "${COLOR_RED}FAILED${COLOR_RESET} - ${test_name}\n"
-        printf "${COLOR_RED}Server failed to respond.${COLOR_RESET}\n"
+        printf "\033[1;91mFAILED\033[0m - ${test_name}\n"
+        printf "\033[1;91mServer failed to respond.\033[0m\n"
         return 1
     fi
 
@@ -187,16 +184,16 @@ run() {
     
     # Print verdict for respective test
     printf "${verdict} - ${test_name}\n"
-    if [ "${verdict}" == "${COLOR_RED}FAILED${COLOR_RESET}" ]; then
-        printf "${COLOR_RED}Response does not match expected data.${COLOR_RESET}\n"
+    if [ "${verdict}" = "\033[1;91mFAILED\033[0m" ]; then
+        printf "\033[1;91mResponse does not match expected data.\033[0m\n"
         if [ ! -e "response_${test_name}" ] || [ ! -e "response_${test_name}" ]; then
-            printf '%s' "${response}" > response_${test_name}
-            printf '%s' "${current_segment}" > expected_${test_name}
+            printf '%q' "${response}" > response_${test_name}
+            printf '%q' "${current_segment}" > expected_${test_name}
         fi
         printf "\033[91mDiagnostic files have been written to \"response_${test_name}\" and \"expected_${test_name}\" in current directory. If these files already existed, they were not overridden.\033[m\n"
         printf "\033[91mThe two version, response (left, <) versus expected (right, >), are compared below.\033[m\n"
         printf "\033[91mNOTE: If no apparent difference can be seen below, there probably are hidden characters present. You can investigate this by examining the diagnostic files with an hexeditor and search for differences.\033[m\n"
-        diff <(printf '%s' "${response}") <(printf '%s' "${current_segment}")
+        diff <(printf '%q' "${response}") <(printf '%q' "${current_segment}")
         return 1
     fi
 }
@@ -211,7 +208,7 @@ run_loop() {
     printf "${output}"
 }
 
-if [ ${#} -eq 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
+if [ ${#} -eq 0 ] || [ "${1}" = "-h" ] || [ "${1}" = "--help" ]; then
     printf "Example usage:\n"
     printf "    ./request_and_compare [-c|-g] path/to/file [path/to/file2...]\n"
     printf "\nIf you want the tests to run until terminated/interrupted, add the '-c' option before any files.\n"
@@ -290,15 +287,15 @@ fi
 
 printf "Running...\n"
 
-if [ "${1}" == "-g" ]; then
+if [ "${1}" = "-g" ]; then
     if ! generate_expected_response "${2}"; then
-        printf "${COLOR_RED}Failed to generate request file. Either bad input file or no response from server!${COLOR_RESET}\n"
+        printf "\033[1;91mFailed to generate request file. Either bad input file or no response from server!\033[0m\n"
         exit 1
     fi
     exit 0
 fi
 
-if [ "${1}" == "-c" ]; then
+if [ "${1}" = "-c" ]; then
     while true; do TIMED_PASSED=$SECONDS; run_loop "${@:2}"; sleep $([ $(( ${SECONDS} - ${TIMED_PASSED} )) -ge ${TIME_SLEEP} ] && printf "0" || printf "$(( ${TIME_SLEEP} - (${SECONDS} - ${TIMED_PASSED}) ))"); done
 else
     run_loop "${@}"
